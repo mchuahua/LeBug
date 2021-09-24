@@ -5,11 +5,17 @@ class modelsimContainer():
     # Run a given command using subprocess (useful for when the API is not enough)
     def runSubprocess(self,cmd,log=True):
         proc = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        proc.wait()
+        # proc.communicate()
         # Print results
-        result = proc.stdout.readlines()+proc.stderr.readlines()
-        if self.log and log:
-            [ print(r.decode("utf-8"), end = '') for r in result]
+        # result = proc.stdout.readlines()+proc.stderr.readlines()
+        # if self.log and log:
+            # [ print(r.decode("utf-8"), end = '') for r in result]
+        while True:
+            result = proc.stdout.readline()
+            if proc.poll() is not None:
+                break
+            if result:
+                print(result.strip().decode("utf-8"))
         return result
 
     # Clean all logs from container to avoid files from accumulating
@@ -49,7 +55,11 @@ class modelsimContainer():
         except:
             print("Docker isn't running on your system. Please start docker before continuing") 
             exit()
-        self.apiClient = docker.APIClient(base_url='unix://var/run/docker.sock')
+        if sys.platform == 'darwin':
+            self.apiClient = docker.APIClient(base_url='unix://var/run/docker.sock')
+        elif sys.platform == 'win32':
+            # Hyper-V may be using 2375, make sure it's excluded!
+            self.apiClient = docker.APIClient(base_url='tcp://localhost:2375')
         self.log=log
 
         # Check whether we already have the container
