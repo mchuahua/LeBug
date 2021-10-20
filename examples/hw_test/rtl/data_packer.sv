@@ -63,6 +63,7 @@
             end
             else begin
               vector_out<=vector_in;
+              // {vectorhalf1_in,vectorhalf2_in}<=vector_in;
             end
             packed_data<='{default:'{DATA_WIDTH{0}}};
             packed_counter<=0;
@@ -136,7 +137,7 @@
 
     assign total_length = packed_counter+vector_length;
     assign pack_1 = {vector_in[0],packed_data[N-1:1]};
+
     assign pack_M = M==N ? {vector_in[M-1:0]}: {vector_in[M-1:0],packed_data[N-1+(M==N):M]};
-    
  
  endmodule 

@@ -1,0 +1,8 @@
+Depth = 4;
+Width = 128;
+Address_radix = dec;
+Data_radix = dec;
+Content
+Begin
+[0..3] : 0;
+End;
