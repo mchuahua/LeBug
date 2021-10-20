@@ -10,7 +10,8 @@
   parameter MAX_CHAINS=4,
   parameter PERSONAL_CONFIG_ID=0,
   parameter [7:0] INITIAL_FIRMWARE      [0:MAX_CHAINS-1] = '{MAX_CHAINS{0}},
-  parameter [7:0] INITIAL_FIRMWARE_COND [0:MAX_CHAINS-1] = '{MAX_CHAINS{0}}
+  parameter [7:0] INITIAL_FIRMWARE_COND [0:MAX_CHAINS-1] = '{MAX_CHAINS{0}},
+  parameter INITIAL_FIRMWARE_PRECISION=1
   )
   (
   input logic clk,
@@ -28,6 +29,7 @@
 
     //----------Internal Variables------------
     reg [7:0] firmware_cond       [0:MAX_CHAINS-1] = INITIAL_FIRMWARE_COND;
+    reg firmware_precision = INITIAL_FIRMWARE_PRECISION;
     reg [DATA_WIDTH-1:0] packed_data [N-1:0];
     reg [31:0] packed_counter = 0;
     reg [7:0] firmware [0:MAX_CHAINS-1] = INITIAL_FIRMWARE;
@@ -40,10 +42,10 @@
     reg [7:0] byte_counter=0;
 
     //-------------Code Start-----------------
-
+// TODO: Needs a precision check; if precision == 1 (half). half precision would be 16. just configure data width to 16 ? but also changes output ?
     always @(posedge clk) begin
       //Packing is not perfect, otherwise it would be too expensive
-      // If we overflow, we just submit things as they are (This may happen if we are mixing precisions)
+      // If we overflow, we just submit things as they are (This may happen if we are mixing precisions). TO actually halve vecotr length, 
       if (valid_in==1'b1 && tracing==1'b1 && commit==1'b1 && cond_valid==1'b1) begin
         if (total_length>N) begin 
             vector_out<=packed_data;

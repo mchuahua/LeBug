@@ -11,7 +11,7 @@ class compiler():
         self.mvru  = struct(axis=0)
         self.vsru  = struct(op=0)
         self.vvalu = struct(op=0,addr=0,cond1=copy(no_cond),cond2=copy(no_cond),cache=0,cache_addr=0,minicache=0,cache_cond1=copy(no_cond),cache_cond2=copy(no_cond))
-        self.dp    = struct(commit=0,size=0,cond1=copy(no_cond),cond2=copy(no_cond))
+        self.dp    = struct(commit=0,size=0,cond1=copy(no_cond),cond2=copy(no_cond),precision='full')
     def vv_filter(self,addr):
         self.fu.filter=1
         self.fu.addr=addr
@@ -59,7 +59,8 @@ class compiler():
             self.vvalu.minicache+=2
         else:
             assert False, "Trying to save to save minicache more than once per chain"
-    def v_commit(self,size=None,condition1=None, condition2=None):
+    # Modified to add functionality for full/half precision
+    def v_commit(self,size=None,condition1=None, condition2=None, precision='full'):
         if size is None:
             size = self.N
         self.dp.commit=1
@@ -69,6 +70,7 @@ class compiler():
             assert False, "Cannot commit "+str(size)+" elements"
         self.dp.cond1[condition1]=self.__process_condition(condition1)
         self.dp.cond2[condition2]=self.__process_condition(condition2)
+        self.dp.precision = self.__process_precision(precision)
     def end_chain(self):
         self.firmware['fu'].append(copy(self.fu))
         self.firmware['mvru'].append(copy(self.mvru))
@@ -87,6 +89,13 @@ class compiler():
     def __process_condition(self,condition):
         if condition=="last" or condition=="notlast" or condition=="first" or condition=="notfirst" or condition is None :
             return True
+        else:
+            assert False, "Condition not understood"
+
+    # Only supports full or half precision
+    def __process_precision(self,precision):
+        if precision=='full' or precision=='half':
+            return precision
         else:
             assert False, "Condition not understood"
 

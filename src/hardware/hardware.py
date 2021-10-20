@@ -484,7 +484,8 @@ class rtlHw():
             ['MAX_CHAINS'],
             ['PERSONAL_CONFIG_ID'],
             ['INITIAL_FIRMWARE'],
-            ['INITIAL_FIRMWARE_COND']])
+            ['INITIAL_FIRMWARE_COND'],
+            ['INITIAL_FIRMWARE_PRECISION']])
         top.mod.dataPacker.setAsConfigurable(configurable_parameters=1)
 
         # TraceBuffer
@@ -557,6 +558,15 @@ class rtlHw():
                     return 128
                 else:
                     return 0
+
+            def encodePrecision(precision):
+                if precision == 'full':
+                    return 0
+                elif precision == 'half':
+                    return 1
+                else:
+                    assert False
+                
             VSRU_INITIAL_FIRMWARE=str([chain.op for chain in self.firmware['vsru']]).replace("[", "'{").replace("]", "}")
             DP_INITIAL_FIRMWARE = str([encodeDpFirmware(chain.commit,chain.size) for chain in self.firmware['dp']]).replace("[", "'{").replace("]", "}")
             VVALU_INITIAL_FIRMWARE_OP=str([chain.op for chain in self.firmware['vvalu']]).replace("[", "'{").replace("]", "}")
@@ -571,6 +581,7 @@ class rtlHw():
             FRU_INITIAL_FIRMWARE_REDUCE_AXIS=str([chain.axis for chain in self.firmware['mvru']]).replace("[", "'{").replace("]", "}")
             IB_INITIAL_FIRMWARE=self.firmware['valid_chains']
             DP_INITIAL_FIRMWARE_COND = str([encodeCond(chain.cond1,chain.cond2) for chain in self.firmware['dp']]).replace("[", "'{").replace("]", "}")
+            DP_INITIAL_FIRMWARE_PRECISION = str([encodePrecision(chain.precision) for chain in self.firmware['dp']]).replace("[", "'{").replace("]", "}")
 
         # Instantiate modules
         top.instantiateModule(top.mod.uart,"comm")
@@ -636,7 +647,8 @@ class rtlHw():
             ['MAX_CHAINS','MAX_CHAINS'],
             ['PERSONAL_CONFIG_ID','4'],
             ['INITIAL_FIRMWARE',DP_INITIAL_FIRMWARE],
-            ['INITIAL_FIRMWARE_COND',DP_INITIAL_FIRMWARE_COND]])
+            ['INITIAL_FIRMWARE_COND',DP_INITIAL_FIRMWARE_COND],
+            ['INITIAL_FIRMWARE_PRECISION',DP_INITIAL_FIRMWARE_PRECISION]])
 
         top.instantiateModule(top.mod.traceBuffer,"tb")
         top.inst.tb.setParameters([
