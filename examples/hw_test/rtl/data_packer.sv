@@ -40,6 +40,7 @@
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
 
+    
     reg [15:0] vectorhalf1_in [N-1:0];
     reg [15:0] vectorhalf2_in [N-1:0];
     //-------------Code Start-----------------
@@ -63,7 +64,6 @@
             end
             else begin
               vector_out<=vector_in;
-              // {vectorhalf1_in,vectorhalf2_in}<=vector_in;
             end
             packed_data<='{default:'{DATA_WIDTH{0}}};
             packed_counter<=0;
@@ -73,12 +73,10 @@
           valid_out<=0;
           if (vector_length==1) begin
             packed_data<=pack_1;
-            {vectorhalf1_in,vectorhalf2_in}<=pack_1;
             packed_counter<=total_length;
           end
           else if (vector_length==M) begin
             packed_data<=pack_M;
-            {vectorhalf1_in,vectorhalf2_in}<=pack_M;
             packed_counter<=total_length;
           end
         end
@@ -137,7 +135,22 @@
 
     assign total_length = packed_counter+vector_length;
     assign pack_1 = {vector_in[0],packed_data[N-1:1]};
-
     assign pack_M = M==N ? {vector_in[M-1:0]}: {vector_in[M-1:0],packed_data[N-1+(M==N):M]};
+
+    generate
+      genvar i;
+      for (i = 0; i < N; i++) begin : half_precision
+        if (i == 0) begin
+          assign vectorhalf1_in[i] = vector_in[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign vectorhalf2_in[i] = vector_in[i][DATA_WIDTH / 2 -1 : 0];
+        end
+        else begin
+          assign vectorhalf1_in[i] = packed_data[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign vectorhalf2_in[i] = packed_data[i][DATA_WIDTH / 2 -1 : 0];
+        end
+      end
+    endgenerate
+    
+    
  
  endmodule 
