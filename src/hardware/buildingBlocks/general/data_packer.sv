@@ -40,8 +40,12 @@
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
 
-    reg [15:0] vectorhalf1_in [N-1:0];
-    reg [15:0] vectorhalf2_in [N-1:0];
+    reg [DATA_WIDTH / 2 -1 :0] vectorhalf1_in [N-1:0];
+    reg [DATA_WIDTH / 2 -1 :0] vectorhalf2_in [N-1:0];
+    reg [DATA_WIDTH / 2 -1 :0] pack1half1 [N-1:0];
+    reg [DATA_WIDTH / 2 -1 :0] pack1half2 [N-1:0];
+    reg [DATA_WIDTH / 2 -1 :0] packMhalf1 [N-1:0];
+    reg [DATA_WIDTH / 2 -1 :0] packMhalf2 [N-1:0];
     //-------------Code Start-----------------
 
     always @(posedge clk) begin
@@ -72,12 +76,10 @@
           valid_out<=0;
           if (vector_length==1) begin
             packed_data<=pack_1;
-            {vectorhalf1_in,vectorhalf2_in}<=pack_1;
             packed_counter<=total_length;
           end
           else if (vector_length==M) begin
             packed_data<=pack_M;
-            {vectorhalf1_in,vectorhalf2_in}<=pack_M;
             packed_counter<=total_length;
           end
         end
@@ -85,6 +87,7 @@
       else begin
         valid_out<=0;
         if (tracing==1'b0) begin // If we are not tracing, we are reconfiguring the instrumentation
+        // TODO add some logic here that checks for half vs full precision
           if (configId==PERSONAL_CONFIG_ID) begin
             byte_counter<=byte_counter+1;
             if (byte_counter<MAX_CHAINS)begin
@@ -137,6 +140,51 @@
     assign total_length = packed_counter+vector_length;
     assign pack_1 = {vector_in[0],packed_data[N-1:1]};
     assign pack_M = M==N ? {vector_in[M-1:0]}: {vector_in[M-1:0],packed_data[N-1+(M==N):M]};
+
+//TODO case statement to generate assign? fundamentally make it larger instead? 
+// This will take up a lot of resources ?
+
+    generate
+      genvar i;
+      for (i = 0; i < N; i++) begin : half_precision_vector_in
+        assign vectorhalf1_in[i] = vector_in[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+        assign vectorhalf2_in[i] = vector_in[i][DATA_WIDTH / 2 -1 : 0];
+      end
+    endgenerate
+
+    generate
+      genvar i;
+      for (i = 0; i < N; i++) begin : half_precision_pack1
+        if (i == 0) begin
+          assign pack1half1[i] = vector_in[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign pack1half2[i] = vector_in[i][DATA_WIDTH / 2 -1 : 0];
+        end
+        else begin
+          assign pack1half1[i] = packed_data[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign pack1half2[i] = packed_data[i][DATA_WIDTH / 2 -1 : 0];
+        end
+      end
+    endgenerate
+
+      // assign pack_M = M==N ? {vector_in[M-1:0]}: {vector_in[M-1:0],packed_data[N-1+(M==N):M]};
+    generate
+      genvar i;
+      for (i = 0; i < N; i++) begin : half_precision_packM
+        if (M == N) begin
+          assign packMhalf1[i] = vector_in[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign packMhalf2[i] = vector_in[i][DATA_WIDTH / 2 -1 : 0];
+        end
+        else if (M - i >= 0) begin
+          assign packMhalf1[i] = vector_in[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign packMhalf2[i] = vector_in[i][DATA_WIDTH / 2 -1 : 0];
+        end
+        else begin
+          assign packMhalf1[i] = packed_data[i][DATA_WIDTH-1 : DATA_WIDTH / 2 -1 ];
+          assign packMhalf2[i] = packed_data[i][DATA_WIDTH / 2 -1 : 0];
+        end
+      end
+    endgenerate
+    
     
  
  endmodule 
