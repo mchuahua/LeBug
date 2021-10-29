@@ -23,8 +23,9 @@
   input logic [7:0] configData,
   input logic [DATA_WIDTH-1:0] vector_in [N-1:0],
   output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
-  output reg valid_out
+  output reg valid_out,
   // TODO: Needs some bus here for specifying half/full precision ( + FW mod)
+  output reg precisoin
  );
 
     //----------Internal Variables------------

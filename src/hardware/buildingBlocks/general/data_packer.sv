@@ -23,8 +23,9 @@
   input logic [7:0] configData,
   input logic [DATA_WIDTH-1:0] vector_in [N-1:0],
   output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
-  output reg valid_out
+  output reg valid_out,
   // TODO: Needs some bus here for specifying half/full precision ( + FW mod)
+  input logic precision
  );
 
     //----------Internal Variables------------
@@ -103,7 +104,6 @@
       else begin
         valid_out<=0;
         if (tracing==1'b0) begin // If we are not tracing, we are reconfiguring the instrumentation
-        // TODO add some logic here that checks for half vs full precision?
           if (configId==PERSONAL_CONFIG_ID) begin
             byte_counter<=byte_counter+1;
             if (byte_counter<MAX_CHAINS)begin
