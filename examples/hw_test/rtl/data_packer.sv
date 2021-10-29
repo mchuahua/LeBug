@@ -23,9 +23,9 @@
   input logic [7:0] configData,
   input logic [DATA_WIDTH-1:0] vector_in [N-1:0],
   output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
-  output reg valid_out,
+  output reg valid_out
   // TODO: Needs some bus here for specifying half/full precision ( + FW mod)
-  output reg precisoin
+  // input logic precision
  );
 
     //----------Internal Variables------------
@@ -37,10 +37,11 @@
     reg [31:0] vector_length;
     reg commit;
     reg cond_valid;
+    reg precision = 0;
+    reg halved = 0;
     wire [DATA_WIDTH-1:0] pack_1 [N-1:0];
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
-
 
     reg [DATA_WIDTH / 2 -1 :0] packed_data_h1 [N-1:0];
     reg [DATA_WIDTH / 2 -1 :0] packed_data_h2 [N-1:0];
@@ -50,52 +51,82 @@
     reg [DATA_WIDTH / 2 -1 :0] pack_1_h2 [N-1:0];
     reg [DATA_WIDTH / 2 -1 :0] pack_M_h1 [N-1:0];
     reg [DATA_WIDTH / 2 -1 :0] pack_M_h2 [N-1:0];
+    localparam HALF = 1;
+    localparam FULL = 0;
     //-------------Code Start-----------------
 
     always @(posedge clk) begin
       //Packing is not perfect, otherwise it would be too expensive
       // If we overflow, we just submit things as they are (This may happen if we are mixing precisions)
       if (valid_in==1'b1 && tracing==1'b1 && commit==1'b1 && cond_valid==1'b1) begin
+        // Buffer into first half before sending out (controled via halved signal). HALF precision means first half should be garbage values. Valid out is not asserted.
+        // TODO: testing
+        if (precision == HALF && total_length >=N && ~halved) begin
+          halved <= 1;
+          if (total_length > N) begin
+            packed_data_h1 <= packed_data_h2;
+            packed_data_h2 <= vector_in_h2;
+            packed_counter <= vector_length;
+          end
+          else if (total_length == N) begin
+            if (vector_length == 1) begin
+              packed_data_h1 <= pack_1_h2;
+            end
+            else if (vector_length == M) begin
+              packed_data_h1 <= pack_M_h2;
+            end
+            // Vector_length is N
+            else begin
+              packed_data_h1 <= vector_in_h2;
+            end
+            packed_counter <= 0;
+          end
+
+        end
         if (total_length>N) begin 
             // vector_out<=packed_data;
             for (int i = 0; i < N; i++) vector_out[i] <= {packed_data_h1[i], packed_data_h2[i]};
-            // packed_data<=vector_in;
+            packed_data<=vector_in;
             packed_data_h1<=vector_in_h1;
             packed_data_h2<=vector_in_h2;
             valid_out<=1;
             packed_counter<=vector_length;
+            halved <= 0;
         end
         else if (total_length==N) begin 
             if (vector_length==1) begin
               // vector_out<=pack_1;
-              for (int i = 0; i < N; i++) vector_out[i] <= {pack_1_h1[i], pack_1_h2[i]};
+              for (int i = 0; i < N; i++) vector_out[i] <= (precision == HALF) ? {packed_data_h1[i], pack_1_h2[i]} : {pack_1_h1[i], pack_1_h2[i]};
             end
             else if (vector_length==M) begin
               // vector_out<=pack_M;
-              for (int i = 0; i < N; i++) vector_out[i] <= {pack_M_h1[i], pack_M_h2[i]};
+              for (int i = 0; i < N; i++) vector_out[i] <= (precision == HALF) ? {packed_data_h1[i], pack_M_h2[i]} : {pack_M_h1[i], pack_M_h2[i]};
             end
             // vector_length should be N
             else begin
               // vector_out<=vector_in;
-              for (int b = 0; b < N; b++) vector_out[b] <= {vector_in_h1[b], vector_in_h2[b]};
+              for (int b = 0; b < N; b++) vector_out[b] <= (precision == HALF) ? {packed_data_h1[b], vector_in_h2[b]} : {vector_in_h1[b], vector_in_h2[b]};
             end
             packed_data<='{default:'{DATA_WIDTH{0}}}; //Clears packed_data by assigning to zero
             packed_data_h1<='{default:'{DATA_WIDTH/2{0}}}; //Clears packed_data by assigning to zero
             packed_data_h2<='{default:'{DATA_WIDTH/2{0}}}; //Clears packed_data by assigning to zero
             packed_counter<=0;
             valid_out<=1;
+            halved <= 0;
         end
         else begin //no vector overflow
           valid_out<=0;
           if (vector_length==1) begin
-            packed_data<=pack_1;
-            packed_data_h1<=pack_1_h1;
+            // packed_data<=pack_1;
+            if (precision == FULL)
+              packed_data_h1<=pack_1_h1;
             packed_data_h2<=pack_1_h2;
             packed_counter<=total_length;
           end
           else if (vector_length==M) begin
-            packed_data<=pack_M;
-            packed_data_h1<=pack_M_h1;
+            // packed_data<=pack_M;
+            if (precision == FULL)
+              packed_data_h1<=pack_M_h1;
             packed_data_h2<=pack_M_h2;
             packed_counter<=total_length;
           end
@@ -104,7 +135,6 @@
       else begin
         valid_out<=0;
         if (tracing==1'b0) begin // If we are not tracing, we are reconfiguring the instrumentation
-        // TODO add some logic here that checks for half vs full precision?
           if (configId==PERSONAL_CONFIG_ID) begin
             byte_counter<=byte_counter+1;
             if (byte_counter<MAX_CHAINS)begin
