@@ -582,7 +582,7 @@ class rtlHw():
             IB_INITIAL_FIRMWARE=self.firmware['valid_chains']
             DP_INITIAL_FIRMWARE_COND = str([encodeCond(chain.cond1,chain.cond2) for chain in self.firmware['dp']]).replace("[", "'{").replace("]", "}")
             DP_INITIAL_FIRMWARE_PRECISION = str([encodePrecision(chain.precision) for chain in self.firmware['dp']]).replace("[", "'{").replace("]", "}")
-
+            
         # Instantiate modules
         top.instantiateModule(top.mod.uart,"comm")
 

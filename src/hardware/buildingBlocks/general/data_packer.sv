@@ -11,7 +11,7 @@
   parameter PERSONAL_CONFIG_ID=0,
   parameter [7:0] INITIAL_FIRMWARE      [0:MAX_CHAINS-1] = '{MAX_CHAINS{0}},
   parameter [7:0] INITIAL_FIRMWARE_COND [0:MAX_CHAINS-1] = '{MAX_CHAINS{0}},
-  parameter INITIAL_FIRMWARE_PRECISION=1
+  parameter [7:0] INITIAL_FIRMWARE_PRECISION  [0:MAX_CHAINS-1] = '{MAX_CHAINS{0}}
   )
   (
   input logic clk,
@@ -29,7 +29,7 @@
 
     //----------Internal Variables------------
     reg [7:0] firmware_cond       [0:MAX_CHAINS-1] = INITIAL_FIRMWARE_COND;
-    reg firmware_precision = INITIAL_FIRMWARE_PRECISION;
+    reg [7:0] firmware_precision [0:MAX_CHAINS-1]= INITIAL_FIRMWARE_PRECISION;
     reg [DATA_WIDTH-1:0] packed_data [N-1:0];
     reg [31:0] packed_counter = 0;
     reg [7:0] firmware [0:MAX_CHAINS-1] = INITIAL_FIRMWARE;
@@ -40,6 +40,7 @@
     wire [DATA_WIDTH-1:0] pack_1 [N-1:0];
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
+    enum {HALF, FULL} precision;
 
     //-------------Code Start-----------------
 // TODO: Needs a precision check; if precision == 1 (half). half precision would be 16. just configure data width to 16 ? but also changes output ?
@@ -127,6 +128,12 @@
       else begin
         cond_valid = 1'b0;
       end
+
+      case (firmware_precision[chainId_in])
+        8'd0: precision = FULL;
+        8'd1: precision = HALF;
+        default: precision = FULL;
+      endcase
     end
 
     assign total_length = packed_counter+vector_length;
