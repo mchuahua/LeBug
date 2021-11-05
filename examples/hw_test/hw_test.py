@@ -48,7 +48,8 @@ def pushVals(emu_proc,hw_proc,num_input_vectors,eof1=None,eof2=None,neg_vals=Fal
         # Fixed-point data type
         elif hw_proc.DATA_TYPE==1:
             if neg_vals:
-                input_vectors.append(10*np.random.random(N)-5)
+                # input_vectors.append(10*np.random.random(N)-5)
+                input_vectors.append(-1)
             else:
                 input_vectors.append(10*np.random.random(N))
             print(f'Cycle {i}:\t{input_vectors[i]}')
