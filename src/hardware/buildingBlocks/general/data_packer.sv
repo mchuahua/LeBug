@@ -24,8 +24,7 @@
   input logic [DATA_WIDTH-1:0] vector_in [N-1:0],
   output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
   output reg valid_out
-  // TODO: Needs some bus here for specifying half/full precision ( + FW mod)
-  // input logic precision
+  // TODO: move precision logic here as input
  );
 
     //----------Internal Variables------------
@@ -42,6 +41,14 @@
     wire [DATA_WIDTH-1:0] pack_1 [N-1:0];
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
+
+    // Generate ?
+    generate
+      genvar x;
+      for (x = 0; x<N; x++) begin
+        reg asdf [x-1:0]= {x'b1};
+      end
+    endgenerate
 
     reg [DATA_WIDTH / 2 -1 :0] packed_data_h1 [N-1:0];
     reg [DATA_WIDTH / 2 -1 :0] packed_data_h2 [N-1:0];
@@ -150,23 +157,33 @@
         end
       end
         $display("New Cycle:");
-        $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
-        $display("\tpacked_data_h1: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h1[0],packed_data_h1[1],packed_data_h1[2],packed_data_h1[3],packed_data_h1[4],packed_data_h1[5],packed_data_h1[6],packed_data_h1[7],valid_in);
-        $display("\tpacked_data_h2: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h2[0],packed_data_h2[1],packed_data_h2[2],packed_data_h2[3],packed_data_h2[4],packed_data_h2[5],packed_data_h2[6],packed_data_h2[7],valid_in);
+        // $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
+        // $display("\tpacked_data_h1: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h1[0],packed_data_h1[1],packed_data_h1[2],packed_data_h1[3],packed_data_h1[4],packed_data_h1[5],packed_data_h1[6],packed_data_h1[7],valid_in);
+        // $display("\tpacked_data_h2: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h2[0],packed_data_h2[1],packed_data_h2[2],packed_data_h2[3],packed_data_h2[4],packed_data_h2[5],packed_data_h2[6],packed_data_h2[7],valid_in);
 
-        //$display("\tvector_out: %0d %0d %0d %0d %0d %0d %0d %0d (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
-        $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
-        $display("\tvector_in_h1: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h1[0],vector_in_h1[1],vector_in_h1[2],vector_in_h1[3],vector_in_h1[4],vector_in_h1[5],vector_in_h1[6],vector_in_h1[7],valid_in);
-        $display("\tvector_in_h2: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h2[0],vector_in_h2[1],vector_in_h2[2],vector_in_h2[3],vector_in_h2[4],vector_in_h2[5],vector_in_h2[6],vector_in_h2[7],valid_in);
+        // //$display("\tvector_out: %0d %0d %0d %0d %0d %0d %0d %0d (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
+        // $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
+        // $display("\tvector_in_h1: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h1[0],vector_in_h1[1],vector_in_h1[2],vector_in_h1[3],vector_in_h1[4],vector_in_h1[5],vector_in_h1[6],vector_in_h1[7],valid_in);
+        // $display("\tvector_in_h2: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h2[0],vector_in_h2[1],vector_in_h2[2],vector_in_h2[3],vector_in_h2[4],vector_in_h2[5],vector_in_h2[6],vector_in_h2[7],valid_in);
 
-        $display("\tpack_1: %b %b %b %b %b %b %b %b (valid = %d)",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7],valid_in);
-        $display("\tpack_1_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_1_h1[0],pack_1_h1[1],pack_1_h1[2],pack_1_h1[3],pack_1_h1[4],pack_1_h1[5],pack_1_h1[6],pack_1_h1[7],valid_in);
-        $display("\tpack_1_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_1_h2[0],pack_1_h2[1],pack_1_h2[2],pack_1_h2[3],pack_1_h2[4],pack_1_h2[5],pack_1_h2[6],pack_1_h2[7],valid_in);
+        // $display("\tpack_1: %b %b %b %b %b %b %b %b (valid = %d)",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7],valid_in);
+        // $display("\tpack_1_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_1_h1[0],pack_1_h1[1],pack_1_h1[2],pack_1_h1[3],pack_1_h1[4],pack_1_h1[5],pack_1_h1[6],pack_1_h1[7],valid_in);
+        // $display("\tpack_1_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_1_h2[0],pack_1_h2[1],pack_1_h2[2],pack_1_h2[3],pack_1_h2[4],pack_1_h2[5],pack_1_h2[6],pack_1_h2[7],valid_in);
 
-        $display("\tpack_M: %b %b %b %b %b %b %b %b (valid = %d)",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7],valid_in);
-        $display("\tpack_M_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h1[0],pack_M_h1[1],pack_M_h1[2],pack_M_h1[3],pack_M_h1[4],pack_M_h1[5],pack_M_h1[6],pack_M_h1[7],valid_in);
-        $display("\tpack_M_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h2[0],pack_M_h2[1],pack_M_h2[2],pack_M_h2[3],pack_M_h2[4],pack_M_h2[5],pack_M_h2[6],pack_M_h2[7],valid_in);
-        // TODO: assert ?
+        // $display("\tpack_M: %b %b %b %b %b %b %b %b (valid = %d)",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7],valid_in);
+        // $display("\tpack_M_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h1[0],pack_M_h1[1],pack_M_h1[2],pack_M_h1[3],pack_M_h1[4],pack_M_h1[5],pack_M_h1[6],pack_M_h1[7],valid_in);
+        // $display("\tpack_M_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h2[0],pack_M_h2[1],pack_M_h2[2],pack_M_h2[3],pack_M_h2[4],pack_M_h2[5],pack_M_h2[6],pack_M_h2[7],valid_in);
+        
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[0], vector_in_h1[0], vector_in_h2[0]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[1], vector_in_h1[1], vector_in_h2[1]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[2], vector_in_h1[2], vector_in_h2[2]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[3], vector_in_h1[3], vector_in_h2[3]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[4], vector_in_h1[4], vector_in_h2[4]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[5], vector_in_h1[5], vector_in_h2[5]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[6], vector_in_h1[6], vector_in_h2[6]);
+        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[7], vector_in_h1[7], vector_in_h2[7]);
+        
+        // TODO: assert 
         if (valid_out) begin
           $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_in);
         end
