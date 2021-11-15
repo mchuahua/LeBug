@@ -37,7 +37,6 @@
     reg commit;
     reg cond_valid;
     
-    reg halved = 0;
     wire [DATA_WIDTH-1:0] pack_1 [N-1:0];
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
@@ -55,7 +54,6 @@
       if (valid_in==1'b1 && tracing==1'b1 && commit==1'b1 && cond_valid==1'b1) begin
         // If packed data is full (precision counter) and total length is reached, push it out and clear packed_data
         if (PRECISION == precision_counter && total_length >=N) begin
-          $display("asdfasdfasdfsadfasfsadfasfdfsafsaffasfafsfdsdfasfsafsafsafdfsafffsf");
           if (total_length>N) begin 
               vector_out<=packed_data;
               packed_data<=vector_in;
@@ -124,13 +122,14 @@
           end
         end
       end
-        // $display("New Cycle:");
+         $display("New Cycle:");
         // $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
         // $display("\tpacked_data_h1: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h1[0],packed_data_h1[1],packed_data_h1[2],packed_data_h1[3],packed_data_h1[4],packed_data_h1[5],packed_data_h1[6],packed_data_h1[7],valid_in);
         // $display("\tpacked_data_h2: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h2[0],packed_data_h2[1],packed_data_h2[2],packed_data_h2[3],packed_data_h2[4],packed_data_h2[5],packed_data_h2[6],packed_data_h2[7],valid_in);
 
         // $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
-        // $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
+         $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
+         $display("\tvector_in: %d %d %d %d %d %d %d %d (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
         // $display("\tvector_in_h1: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h1[0],vector_in_h1[1],vector_in_h1[2],vector_in_h1[3],vector_in_h1[4],vector_in_h1[5],vector_in_h1[6],vector_in_h1[7],valid_in);
         // $display("\tvector_in_h2: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h2[0],vector_in_h2[1],vector_in_h2[2],vector_in_h2[3],vector_in_h2[4],vector_in_h2[5],vector_in_h2[6],vector_in_h2[7],valid_in);
 

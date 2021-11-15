@@ -11,7 +11,7 @@ module testbench;
     parameter TB_SIZE=8;
     parameter FUVRF_SIZE=4;
     parameter VVVRF_SIZE=8;
-    parameter DATA_TYPE=0;
+    parameter DATA_TYPE=1;
 
     // Declare inputs
     reg clk=1'b0;
@@ -120,28 +120,28 @@ module testbench;
         valid = 1;
         eof[0] = 0;
         eof[1] = 0;
-        vector[0]=32'd5;
-        vector[1]=32'd0;
-        vector[2]=32'd3;
-        vector[3]=32'd3;
-        vector[4]=32'd7;
-        vector[5]=32'd3;
-        vector[6]=32'd5;
-        vector[7]=32'd2;
+        vector[0]=32'd359670;
+        vector[1]=32'd468707;
+        vector[2]=32'd395027;
+        vector[3]=32'd357095;
+        vector[4]=32'd277646;
+        vector[5]=32'd423293;
+        vector[6]=32'd286777;
+        vector[7]=32'd584432;
         #half_period;
         #half_period;
 
         valid = 1;
-        eof[0] = 1;
+        eof[0] = 0;
         eof[1] = 0;
-        vector[0]=32'd4;
-        vector[1]=32'd7;
-        vector[2]=32'd6;
-        vector[3]=32'd8;
-        vector[4]=32'd8;
-        vector[5]=32'd1;
-        vector[6]=32'd6;
-        vector[7]=32'd7;
+        vector[0]=32'd631546;
+        vector[1]=32'd251292;
+        vector[2]=32'd518865;
+        vector[3]=32'd346617;
+        vector[4]=32'd372274;
+        vector[5]=32'd606599;
+        vector[6]=32'd46554;
+        vector[7]=32'd57101;
         #half_period;
         #half_period;
         toFile();
@@ -149,103 +149,18 @@ module testbench;
         valid = 1;
         eof[0] = 0;
         eof[1] = 0;
-        vector[0]=32'd7;
-        vector[1]=32'd8;
-        vector[2]=32'd1;
-        vector[3]=32'd5;
-        vector[4]=32'd8;
-        vector[5]=32'd4;
-        vector[6]=32'd3;
-        vector[7]=32'd0;
+        vector[0]=32'd13250;
+        vector[1]=32'd545666;
+        vector[2]=32'd509973;
+        vector[3]=32'd570171;
+        vector[4]=32'd641347;
+        vector[5]=32'd523737;
+        vector[6]=32'd302435;
+        vector[7]=32'd511528;
         #half_period;
         #half_period;
         toFile();
 
-        valid = 1;
-        eof[0] = 1;
-        eof[1] = 1;
-        vector[0]=32'd3;
-        vector[1]=32'd5;
-        vector[2]=32'd0;
-        vector[3]=32'd2;
-        vector[4]=32'd3;
-        vector[5]=32'd8;
-        vector[6]=32'd1;
-        vector[7]=32'd3;
-        #half_period;
-        #half_period;
-        toFile();
-
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
-
-        valid = 0;
-        #half_period;
-        #half_period;
-        toFile();
 
         valid = 0;
         #half_period;
