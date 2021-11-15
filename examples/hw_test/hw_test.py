@@ -52,7 +52,7 @@ def pushVals(emu_proc,hw_proc,num_input_vectors,eof1=None,eof2=None,neg_vals=Fal
                 # input_vectors.append(-1)
             else:
                 # input_vectors.append(10*np.random.random(N))
-                input_vectors.append(np.random.randint(5000,size=N, dtype='uint16').astype(float))
+                input_vectors.append(np.random.randint(256, 5000,size=N, dtype='uint16').astype(float))
             print(f'Cycle {i}:\t{input_vectors[i]}')
             emu_proc.push([input_vectors[i],eof1[i],eof2[i]])
             input_vectors[i] = floatToEncodedInt(input_vectors[i],hw_proc.DATA_WIDTH)
@@ -66,7 +66,7 @@ def raw():
     emu_proc = emulatedHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,MAX_CHAINS,BUILDING_BLOCKS)
 
     # Create common input values
-    num_input_vectors=4
+    num_input_vectors=8
     pushVals(emu_proc,hw_proc,num_input_vectors,neg_vals=False)
 
     # Configure firmware - Both HW and Emulator work with the same firmware
