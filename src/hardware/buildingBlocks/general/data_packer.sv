@@ -41,7 +41,7 @@
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
 
-    localparam PRECISION = 2; // Individual precision size 1/PRECISION
+    localparam PRECISION = 4; // Individual precision size 1/PRECISION
     //TODO: assert checks needed for 0 and PRECISION > DATAWIDTH.
 
     reg [5:0] precision_counter = 1;
@@ -73,6 +73,8 @@
                 // vector_out<=vector_in;
               end
               precision_counter <= 1; // Reset counter for precision packing cycles
+                           $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
+
               packed_data<='{default:'{DATA_WIDTH{0}}}; //Clears packed_data by assigning to zero
               packed_counter<=0;
           end
@@ -82,7 +84,6 @@
         else begin
           // 1. Increment precision_counter if length is full and reset packed_counter, or increment packed_counter according to vector_length
           if (total_length >= N) begin
-            $display("inside total length");
             packed_counter <= 0;
             precision_counter <= precision_counter + 1;
           end
@@ -100,17 +101,10 @@
           end
             // Vector_length is N
           else begin
-                          $display("vector length is n");
-                               $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
-
-                    $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
-
               for(int a = 0; a < N; a++) packed_data[a] <= gen_precision_out.next(packed_data[a], vector_in[a]);
               // packed_data_h1 <= vector_in_h2;
-                      $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
-                               $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
-
-
+              $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
+              $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
           end
           valid_out <= 0;
         end
@@ -134,35 +128,29 @@
       end
         //  $display("New Cycle:");
         // $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
-        // $display("\tpacked_data_h1: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h1[0],packed_data_h1[1],packed_data_h1[2],packed_data_h1[3],packed_data_h1[4],packed_data_h1[5],packed_data_h1[6],packed_data_h1[7],valid_in);
-        // $display("\tpacked_data_h2: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h2[0],packed_data_h2[1],packed_data_h2[2],packed_data_h2[3],packed_data_h2[4],packed_data_h2[5],packed_data_h2[6],packed_data_h2[7],valid_in);
-
         // $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
         //  $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
         //  $display("\tvector_in: %d %d %d %d %d %d %d %d (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
-        // $display("\tvector_in_h1: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h1[0],vector_in_h1[1],vector_in_h1[2],vector_in_h1[3],vector_in_h1[4],vector_in_h1[5],vector_in_h1[6],vector_in_h1[7],valid_in);
-        // $display("\tvector_in_h2: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h2[0],vector_in_h2[1],vector_in_h2[2],vector_in_h2[3],vector_in_h2[4],vector_in_h2[5],vector_in_h2[6],vector_in_h2[7],valid_in);
-
         // $display("\tpack_1: %b %b %b %b %b %b %b %b (valid = %d)",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7],valid_in);
-        // $display("\tpack_1_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_1_h1[0],pack_1_h1[1],pack_1_h1[2],pack_1_h1[3],pack_1_h1[4],pack_1_h1[5],pack_1_h1[6],pack_1_h1[7],valid_in);
-        // $display("\tpack_1_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_1_h2[0],pack_1_h2[1],pack_1_h2[2],pack_1_h2[3],pack_1_h2[4],pack_1_h2[5],pack_1_h2[6],pack_1_h2[7],valid_in);
-
         // $display("\tpack_M: %b %b %b %b %b %b %b %b (valid = %d)",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7],valid_in);
-        // $display("\tpack_M_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h1[0],pack_M_h1[1],pack_M_h1[2],pack_M_h1[3],pack_M_h1[4],pack_M_h1[5],pack_M_h1[6],pack_M_h1[7],valid_in);
-        // $display("\tpack_M_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h2[0],pack_M_h2[1],pack_M_h2[2],pack_M_h2[3],pack_M_h2[4],pack_M_h2[5],pack_M_h2[6],pack_M_h2[7],valid_in);
-        
-        // TODO: assert 
+
+        // TODO: assert ?
         if (valid_out) begin
-          case(PRECISION)
-            2: begin $display("PRECISION 2");
-            $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_in);
-            $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH/PRECISION - 1:0],vector_out[1][DATA_WIDTH/PRECISION - 1:0],vector_out[2][DATA_WIDTH/PRECISION - 1:0],vector_out[3][DATA_WIDTH/PRECISION - 1:0],vector_out[4][DATA_WIDTH/PRECISION - 1:0],vector_out[5][DATA_WIDTH/PRECISION - 1:0],vector_out[6][DATA_WIDTH/PRECISION - 1:0],vector_out[7][DATA_WIDTH/PRECISION - 1:0],valid_in);
+          $display("PRECISION %d", PRECISION);
+          $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_in);
+          case (PRECISION)
+            2: begin
+              $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH/PRECISION - 1:0],vector_out[1][DATA_WIDTH/PRECISION - 1:0],vector_out[2][DATA_WIDTH/PRECISION - 1:0],vector_out[3][DATA_WIDTH/PRECISION - 1:0],vector_out[4][DATA_WIDTH/PRECISION - 1:0],vector_out[5][DATA_WIDTH/PRECISION - 1:0],vector_out[6][DATA_WIDTH/PRECISION - 1:0],vector_out[7][DATA_WIDTH/PRECISION - 1:0],valid_in);
             $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH-1 : DATA_WIDTH/PRECISION],vector_out[1][DATA_WIDTH-1 : DATA_WIDTH/PRECISION ],vector_out[2][DATA_WIDTH-1 : DATA_WIDTH/PRECISION ],vector_out[3][DATA_WIDTH-1 : DATA_WIDTH/PRECISION ],vector_out[4][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[5][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[6][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[7][DATA_WIDTH-1 : DATA_WIDTH/PRECISION ],valid_in);
-            
+            end
+            4: begin 
+              $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH/PRECISION - 1:0],vector_out[1][DATA_WIDTH/PRECISION - 1:0],vector_out[2][DATA_WIDTH/PRECISION - 1:0],vector_out[3][DATA_WIDTH/PRECISION - 1:0],vector_out[4][DATA_WIDTH/PRECISION - 1:0],vector_out[5][DATA_WIDTH/PRECISION - 1:0],vector_out[6][DATA_WIDTH/PRECISION - 1:0],vector_out[7][DATA_WIDTH/PRECISION - 1:0],valid_in);
+              $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH - 2*DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[1][DATA_WIDTH - 2*DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[2][DATA_WIDTH - 2*DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[3][DATA_WIDTH - 2*DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[4][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[5][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[6][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[7][DATA_WIDTH - 2*DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],valid_in);
+              $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH-DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[1][DATA_WIDTH-DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[2][DATA_WIDTH-DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[3][DATA_WIDTH-DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],vector_out[4][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[5][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[6][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[7][DATA_WIDTH-DATA_WIDTH/PRECISION -: DATA_WIDTH/PRECISION],valid_in);
+              $display("\tvector_out: %d %d %d %d %d %d %d %d (valid = %d)",vector_out[0][DATA_WIDTH-1 -: DATA_WIDTH/PRECISION],vector_out[1][DATA_WIDTH-1 -: DATA_WIDTH/PRECISION],vector_out[2][DATA_WIDTH-1 -: DATA_WIDTH/PRECISION],vector_out[3][DATA_WIDTH-1 -: DATA_WIDTH/PRECISION],vector_out[4][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[5][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[6][DATA_WIDTH -1: DATA_WIDTH/PRECISION ],vector_out[7][DATA_WIDTH-1 -: DATA_WIDTH/PRECISION],valid_in);
             end
             default: $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_in);
           endcase
-          
         end
     end
 
