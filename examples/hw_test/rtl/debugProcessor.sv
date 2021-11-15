@@ -17,7 +17,7 @@ module  debugger
   parameter VVVRF_SIZE = 8,
   parameter MAX_CHAINS = 4,
   parameter TB_SIZE = 8,
-  parameter DATA_TYPE = 1
+  parameter DATA_TYPE = 0
 )
 (
   input logic  clk ,
@@ -123,7 +123,7 @@ module  debugger
       .IB_DEPTH(IB_DEPTH),
       .PERSONAL_CONFIG_ID(0),
       .MAX_CHAINS(MAX_CHAINS),
-      .INITIAL_FIRMWARE(1)
+      .INITIAL_FIRMWARE(2)
     )
     ib(
       .clk(clk),
@@ -180,21 +180,21 @@ module  debugger
       .PERSONAL_CONFIG_ID(2),
       .VVVRF_SIZE(VVVRF_SIZE),
       .DATA_TYPE(DATA_TYPE),
-      .INITIAL_FIRMWARE_OP('{0, 0, 0, 0}),
-      .INITIAL_FIRMWARE_ADDR_RD('{0, 0, 0, 0}),
-      .INITIAL_FIRMWARE_COND('{0, 0, 0, 0}),
-      .INITIAL_FIRMWARE_CACHE('{0, 0, 0, 0}),
-      .INITIAL_FIRMWARE_CACHE_ADDR('{0, 0, 0, 0}),
-      .INITIAL_FIRMWARE_MINICACHE('{0, 0, 0, 0}),
-      .INITIAL_FIRMWARE_CACHE_COND('{0, 0, 0, 0})
+      .INITIAL_FIRMWARE_OP('{1, 4, 0, 0}),
+      .INITIAL_FIRMWARE_ADDR_RD('{0, 1, 0, 0}),
+      .INITIAL_FIRMWARE_COND('{8, 128, 0, 0}),
+      .INITIAL_FIRMWARE_CACHE('{1, 1, 0, 0}),
+      .INITIAL_FIRMWARE_CACHE_ADDR('{0, 1, 0, 0}),
+      .INITIAL_FIRMWARE_MINICACHE('{2, 1, 0, 0}),
+      .INITIAL_FIRMWARE_CACHE_COND('{0, 1, 0, 0})
     )
     vvalu(
       .clk(clk),
-      .valid_in(valid_out_fru),
-      .eof_in(eof_out_fru),
-      .bof_in(bof_out_fru),
-      .chainId_in(chainId_out_fru),
-      .vector_in(vector_out_fru),
+      .valid_in(valid_out_vsru),
+      .eof_in(eof_out_vsru),
+      .bof_in(bof_out_vsru),
+      .chainId_in(chainId_out_vsru),
+      .vector_in(vector_out_vsru),
       .tracing(tracing_reconfig),
       .configId(configId_reconfig),
       .configData(configData_reconfig),
@@ -212,15 +212,15 @@ module  debugger
       .DATA_WIDTH(DATA_WIDTH),
       .MAX_CHAINS(MAX_CHAINS),
       .PERSONAL_CONFIG_ID(3),
-      .INITIAL_FIRMWARE('{0, 0, 0, 0})
+      .INITIAL_FIRMWARE('{1, 0, 0, 0})
     )
     vsru(
       .clk(clk),
-      .valid_in(valid_out_vvalu),
-      .eof_in(eof_out_vvalu),
-      .bof_in(bof_out_vvalu),
-      .chainId_in(chainId_out_vvalu),
-      .vector_in(vector_out_vvalu),
+      .valid_in(valid_out_fru),
+      .eof_in(eof_out_fru),
+      .bof_in(bof_out_fru),
+      .chainId_in(chainId_out_fru),
+      .vector_in(vector_out_fru),
       .tracing(tracing_reconfig),
       .configId(configId_reconfig),
       .configData(configData_reconfig),
@@ -239,16 +239,16 @@ module  debugger
       .DATA_WIDTH(DATA_WIDTH),
       .MAX_CHAINS(MAX_CHAINS),
       .PERSONAL_CONFIG_ID(4),
-      .INITIAL_FIRMWARE('{0, 3, 3, 3}),
-      .INITIAL_FIRMWARE_COND('{0, 0, 0, 0})
+      .INITIAL_FIRMWARE('{3, 0, 3, 3}),
+      .INITIAL_FIRMWARE_COND('{0, 16, 0, 0})
     )
     dp(
       .clk(clk),
-      .valid_in(valid_out_vsru),
-      .eof_in(eof_out_vsru),
-      .bof_in(bof_out_vsru),
-      .chainId_in(chainId_out_vsru),
-      .vector_in(vector_out_vsru),
+      .valid_in(valid_out_vvalu),
+      .eof_in(eof_out_vvalu),
+      .bof_in(bof_out_vvalu),
+      .chainId_in(chainId_out_vvalu),
+      .vector_in(vector_out_vvalu),
       .tracing(tracing_reconfig),
       .configId(configId_reconfig),
       .configData(configData_reconfig),

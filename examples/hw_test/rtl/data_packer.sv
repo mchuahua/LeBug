@@ -29,114 +29,82 @@
 
     //----------Internal Variables------------
     reg [7:0] firmware_cond       [0:MAX_CHAINS-1] = INITIAL_FIRMWARE_COND;
-    reg [DATA_WIDTH-1:0] packed_data [N-1:0];
+    reg [DATA_WIDTH-1:0] packed_data [N-1:0]; // Precision changes here
     reg [31:0] packed_counter = 0;
     reg [7:0] firmware [0:MAX_CHAINS-1] = INITIAL_FIRMWARE;
     reg [31:0] total_length;
     reg [31:0] vector_length;
     reg commit;
     reg cond_valid;
-    reg precision = 0;
+    
     reg halved = 0;
     wire [DATA_WIDTH-1:0] pack_1 [N-1:0];
     wire [DATA_WIDTH-1:0] pack_M [N-1:0];
     reg [7:0] byte_counter=0;
 
-    // Generate ?
-    generate
-      genvar x;
-      for (x = 0; x<N; x++) begin
-        reg asdf [x-1:0]= {x'b1};
-      end
-    endgenerate
+    localparam PRECISION = 1; // Individual precision size 1/PRECISION
+    //TODO: assert checks needed for 0 and PRECISION > DATAWIDTH.
 
-    reg [DATA_WIDTH / 2 -1 :0] packed_data_h1 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] packed_data_h2 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] vector_in_h1 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] vector_in_h2 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] pack_1_h1 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] pack_1_h2 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] pack_M_h1 [N-1:0];
-    reg [DATA_WIDTH / 2 -1 :0] pack_M_h2 [N-1:0];
-    localparam HALF = 1;
-    localparam FULL = 0;
+    reg [5:0] precision_counter = 1;
+
     //-------------Code Start-----------------
 
     always @(posedge clk) begin
       //Packing is not perfect, otherwise it would be too expensive
       // If we overflow, we just submit things as they are (This may happen if we are mixing precisions)
       if (valid_in==1'b1 && tracing==1'b1 && commit==1'b1 && cond_valid==1'b1) begin
-        // Buffer into first half before sending out (controled via halved signal). HALF precision means first half should be garbage values. Valid out is not asserted.
-        // TODO: testing
-        if (precision == HALF && total_length >=N && ~halved) begin
-          halved <= 1;
-          if (total_length > N) begin
-            packed_data_h1 <= packed_data_h2;
-            packed_data_h2 <= vector_in_h2;
-            packed_counter <= vector_length;
+        // If packed data is full (precision counter) and total length is reached, push it out and clear packed_data
+        if (PRECISION == precision_counter && total_length >=N) begin
+          $display("asdfasdfasdfsadfasfsadfasfdfsafsaffasfafsfdsdfasfsafsafsafdfsafffsf");
+          if (total_length>N) begin 
+              vector_out<=packed_data;
+              packed_data<=vector_in;
+              packed_counter<=vector_length;
           end
-          else if (total_length == N) begin
-            if (vector_length == 1) begin
-              packed_data_h1 <= pack_1_h2;
-            end
-            else if (vector_length == M) begin
-              packed_data_h1 <= pack_M_h2;
-            end
-            // Vector_length is N
-            else begin
-              packed_data_h1 <= vector_in_h2;
-            end
+          // If not greater than N, then should be N
+          else begin 
+              if (vector_length==1)
+                for(int a = 0; a < N; a++) vector_out[a] <= gen_precision_out.next(packed_data[a], pack_1[a]);
+                // vector_out<=pack_1;
+              else if (vector_length==M)
+                // vector_out<=pack_M;
+                for(int a = 0; a < N; a++) vector_out[a] <= gen_precision_out.next(packed_data[a], pack_M[a]);
+              // vector_length should be N if neither 1 or M.
+              else begin
+                for(int a = 0; a < N; a++) vector_out[a] <= gen_precision_out.next(packed_data[a], vector_in[a]);
+                // vector_out<=vector_in;
+              end
+              precision_counter <= 1; // Reset counter for precision packing cycles
+              packed_data<='{default:'{DATA_WIDTH{0}}}; //Clears packed_data by assigning to zero
+              packed_counter<=0;
+          end
+          valid_out<=1;
+        end
+        // Before packed data is full (precision counter != PRECISION), do two things:
+        else begin
+          // 1. Increment precision_counter if length is full and reset packed_counter, or increment packed_counter according to vector_length
+          if (total_length >= N) begin
             packed_counter <= 0;
+            precision_counter <= precision_counter + 1;
           end
-
-        end
-        if (total_length>N) begin 
-            // vector_out<=packed_data;
-            for (int i = 0; i < N; i++) vector_out[i] <= {packed_data_h1[i], packed_data_h2[i]};
-            packed_data<=vector_in;
-            packed_data_h1<=vector_in_h1;
-            packed_data_h2<=vector_in_h2;
-            valid_out<=1;
-            packed_counter<=vector_length;
-            halved <= 0;
-        end
-        else if (total_length==N) begin 
-            if (vector_length==1) begin
-              // vector_out<=pack_1;
-              for (int i = 0; i < N; i++) vector_out[i] <= (precision == HALF) ? {packed_data_h1[i], pack_1_h2[i]} : {pack_1_h1[i], pack_1_h2[i]};
-            end
-            else if (vector_length==M) begin
-              // vector_out<=pack_M;
-              for (int i = 0; i < N; i++) vector_out[i] <= (precision == HALF) ? {packed_data_h1[i], pack_M_h2[i]} : {pack_M_h1[i], pack_M_h2[i]};
-            end
-            // vector_length should be N
-            else begin
-              // vector_out<=vector_in;
-              for (int b = 0; b < N; b++) vector_out[b] <= (precision == HALF) ? {packed_data_h1[b], vector_in_h2[b]} : {vector_in_h1[b], vector_in_h2[b]};
-            end
-            packed_data<='{default:'{DATA_WIDTH{0}}}; //Clears packed_data by assigning to zero
-            packed_data_h1<='{default:'{DATA_WIDTH/2{0}}}; //Clears packed_data by assigning to zero
-            packed_data_h2<='{default:'{DATA_WIDTH/2{0}}}; //Clears packed_data by assigning to zero
-            packed_counter<=0;
-            valid_out<=1;
-            halved <= 0;
-        end
-        else begin //no vector overflow
-          valid_out<=0;
-          if (vector_length==1) begin
-            // packed_data<=pack_1;
-            if (precision == FULL)
-              packed_data_h1<=pack_1_h1;
-            packed_data_h2<=pack_1_h2;
-            packed_counter<=total_length;
+          else begin
+            packed_counter <= total_length;
           end
-          else if (vector_length==M) begin
-            // packed_data<=pack_M;
-            if (precision == FULL)
-              packed_data_h1<=pack_M_h1;
-            packed_data_h2<=pack_M_h2;
-            packed_counter<=total_length;
+          // 2. Pack according to precision
+          if (vector_length == 1) begin
+              for(int a = 0; a < N; a++) packed_data[a] <= gen_precision_out.next(packed_data[a], pack_1[a]);
+              // packed_data_h1 <= pack_1_h2;
+            end
+          else if (vector_length == M) begin
+              for(int a = 0; a < N; a++) packed_data[a] <= gen_precision_out.next(packed_data[a], pack_M[a]);
+              // packed_data_h1 <= pack_M_h2;
           end
+            // Vector_length is N
+          else begin
+              for(int a = 0; a < N; a++) packed_data[a] <= gen_precision_out.next(packed_data[a], vector_in[a]);
+              // packed_data_h1 <= vector_in_h2;
+          end
+          valid_out <= 0;
         end
       end
       else begin
@@ -156,12 +124,12 @@
           end
         end
       end
-        $display("New Cycle:");
+        // $display("New Cycle:");
         // $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
         // $display("\tpacked_data_h1: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h1[0],packed_data_h1[1],packed_data_h1[2],packed_data_h1[3],packed_data_h1[4],packed_data_h1[5],packed_data_h1[6],packed_data_h1[7],valid_in);
         // $display("\tpacked_data_h2: %b %b %b %b %b %b %b %b (valid = %d)",packed_data_h2[0],packed_data_h2[1],packed_data_h2[2],packed_data_h2[3],packed_data_h2[4],packed_data_h2[5],packed_data_h2[6],packed_data_h2[7],valid_in);
 
-        // //$display("\tvector_out: %0d %0d %0d %0d %0d %0d %0d %0d (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
+        // $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
         // $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
         // $display("\tvector_in_h1: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h1[0],vector_in_h1[1],vector_in_h1[2],vector_in_h1[3],vector_in_h1[4],vector_in_h1[5],vector_in_h1[6],vector_in_h1[7],valid_in);
         // $display("\tvector_in_h2: %b %b %b %b %b %b %b %b (valid = %d)",vector_in_h2[0],vector_in_h2[1],vector_in_h2[2],vector_in_h2[3],vector_in_h2[4],vector_in_h2[5],vector_in_h2[6],vector_in_h2[7],valid_in);
@@ -173,15 +141,6 @@
         // $display("\tpack_M: %b %b %b %b %b %b %b %b (valid = %d)",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7],valid_in);
         // $display("\tpack_M_h1: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h1[0],pack_M_h1[1],pack_M_h1[2],pack_M_h1[3],pack_M_h1[4],pack_M_h1[5],pack_M_h1[6],pack_M_h1[7],valid_in);
         // $display("\tpack_M_h2: %b %b %b %b %b %b %b %b (valid = %d)",pack_M_h2[0],pack_M_h2[1],pack_M_h2[2],pack_M_h2[3],pack_M_h2[4],pack_M_h2[5],pack_M_h2[6],pack_M_h2[7],valid_in);
-        
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[0], vector_in_h1[0], vector_in_h2[0]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[1], vector_in_h1[1], vector_in_h2[1]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[2], vector_in_h1[2], vector_in_h2[2]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[3], vector_in_h1[3], vector_in_h2[3]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[4], vector_in_h1[4], vector_in_h2[4]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[5], vector_in_h1[5], vector_in_h2[5]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[6], vector_in_h1[6], vector_in_h2[6]);
-        // $display("\tvalue: %f, half1: %f, half2: %f", vector_in[7], vector_in_h1[7], vector_in_h2[7]);
         
         // TODO: assert 
         if (valid_out) begin
@@ -220,52 +179,26 @@
     assign pack_1 = {vector_in[0],packed_data[N-1:1]};
     assign pack_M = M==N ? {vector_in[M-1:0]}: {vector_in[M-1:0],packed_data[N-1+(M==N):M]};
 
+
+    // x = PRECISION -> {x-1/x packed_data, 1/x vector_in}
     generate
-      genvar i;
-      for (i = 0; i < N; i++) begin : half_precision_vector_in
-        assign vector_in_h1[i] = vector_in[i][DATA_WIDTH-1 : DATA_WIDTH / 2 ];
-        assign vector_in_h2[i] = vector_in[i][DATA_WIDTH / 2 -1 : 0];
+      case(PRECISION)
+        1: begin: gen_precision_out
+          function automatic [DATA_WIDTH-1:0] next;
+            input [DATA_WIDTH-1:0] prev;
+            input [DATA_WIDTH-1:0] curr;
+            next = curr;
+          endfunction
+        end
+        default: begin: gen_precision_out
+          function automatic [DATA_WIDTH-1:0] next;
+            input [DATA_WIDTH-1:0] prev;
+            input [DATA_WIDTH-1:0] curr;
+            next = {curr[DATA_WIDTH/PRECISION - 1: 0], prev[DATA_WIDTH-1: DATA_WIDTH/PRECISION]};
+          endfunction
       end
+      endcase
     endgenerate
 
-    // assign pack_1 = {vector_in[0],packed_data[N-1:1]};
-    generate
-      genvar j;
-      for (j = 0; j < N; j++) begin : half_precision_pack1
-        // Put in single memory address 0 up top
-        if (j == 0) begin
-          assign pack_1_h1[N-1] = vector_in[j][DATA_WIDTH-1 : DATA_WIDTH / 2 ];
-          assign pack_1_h2[N-1] = vector_in[j][DATA_WIDTH / 2 -1 : 0];
-        end
-        // Afterwards put in most recent packed_data (aka discard oldest data N-1)
-        else begin
-          assign pack_1_h1[j-1] = packed_data_h1[j];
-          assign pack_1_h2[j-1] = packed_data_h2[j];
-        end
-      end
-    endgenerate
-
-      // assign pack_M = M==N ? {vector_in[M-1:0]}: {vector_in[M-1:0],packed_data[N-1+(M==N):M]};
-    generate
-      genvar k;
-      for (k = 0; k < N; k++) begin : half_precision_packM
-        if (M == N) begin
-          assign pack_M_h1[k] = vector_in[k][DATA_WIDTH-1 : DATA_WIDTH / 2 ];
-          assign pack_M_h2[k] = vector_in[k][DATA_WIDTH / 2 -1 : 0];
-        end
-        // Put in vector_in for size M
-        else if (N - M - k > 0) begin
-          assign pack_M_h1[N-M+k] = vector_in[k][DATA_WIDTH-1 : DATA_WIDTH / 2];
-          assign pack_M_h2[N-M+k] = vector_in[k][DATA_WIDTH / 2 -1 : 0];
-        end
-        // Afterwards put in most recent packed_data
-        else begin
-          assign pack_M_h1[k-M] = packed_data_h1[k];
-          assign pack_M_h2[k-M] = packed_data_h2[k];
-        end
-      end
-    endgenerate
-    
-    
  
  endmodule 
