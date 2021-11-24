@@ -51,42 +51,42 @@ def pushVals(emu_proc,hw_proc,num_input_vectors,eof1=None,eof2=None,neg_vals=Fal
                 input_vectors.append(10*np.random.random(N)-5)
                 # input_vectors.append(-1)
             else:
-                # input_vectors.append(10*np.random.random(N))
-                input_vectors.append(np.random.randint(256, 5000,size=N, dtype='uint16').astype(float))
+                input_vectors.append(10*np.random.random(N))
+                # input_vectors.append(np.random.randint(256, 5000,size=N, dtype='uint16').astype(float))
             print(f'Cycle {i}:\t{input_vectors[i]}')
             emu_proc.push([input_vectors[i],eof1[i],eof2[i]])
             input_vectors[i] = floatToEncodedInt(input_vectors[i],hw_proc.DATA_WIDTH)
         hw_proc.push([input_vectors[i],eof1[i],eof2[i]])
 
-def raw():
+# def raw():
 
-    # Instantiate HW and Emulator Processors
-    readConf()
-    hw_proc  = rtlHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,DATA_WIDTH,MAX_CHAINS,BUILDING_BLOCKS,DATA_TYPE,DEVICE_FAM)
-    emu_proc = emulatedHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,MAX_CHAINS,BUILDING_BLOCKS)
+#     # Instantiate HW and Emulator Processors
+#     readConf()
+#     hw_proc  = rtlHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,DATA_WIDTH,MAX_CHAINS,BUILDING_BLOCKS,DATA_TYPE,DEVICE_FAM)
+#     emu_proc = emulatedHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,MAX_CHAINS,BUILDING_BLOCKS)
 
-    # Create common input values
-    num_input_vectors=8
-    pushVals(emu_proc,hw_proc,num_input_vectors,neg_vals=False)
+#     # Create common input values
+#     num_input_vectors=3
+#     pushVals(emu_proc,hw_proc,num_input_vectors,neg_vals=False)
 
-    # Configure firmware - Both HW and Emulator work with the same firmware
-    fw = firm.raw(hw_proc.compiler)
-    emu_proc.config(fw)
-    hw_proc.config(fw)
+#     # Configure firmware - Both HW and Emulator work with the same firmware
+#     fw = firm.raw(hw_proc.compiler)
+#     emu_proc.config(fw)
+#     hw_proc.config(fw)
 
-    # Run HW simulation and emulation
-    steps=40
-    hw_results = hw_proc.run(steps=steps,gui=False,log=False)
-    emu_results = emu_proc.run(steps=steps)
+#     # Run HW simulation and emulation
+#     steps=40
+#     hw_results = hw_proc.run(steps=steps,gui=False,log=False)
+#     emu_results = emu_proc.run(steps=steps)
 
-    # Filter Results
-    emu_results_filtered, hw_results_filtered = filterResults(emu_results, hw_results, DATA_TYPE)
+#     # Filter Results
+#     emu_results_filtered, hw_results_filtered = filterResults(emu_results, hw_results, DATA_TYPE)
 
-    # Verify that results are equal
-    assert np.allclose(emu_results_filtered,hw_results_filtered,rtol=0.01)
-    print("Passed test #1")
+#     # Verify that results are equal
+#     assert np.allclose(emu_results_filtered,hw_results_filtered,rtol=0.01)
+#     print("Passed test #1")
 
-raw()
+# raw()
 
 # def multipleChains():
 
@@ -186,40 +186,40 @@ raw()
 # conditions()
 
 
-# def distribution():
+def distribution():
 
-#     # Instantiate HW and Emulator Processors
-#     readConf()
-#     hw_proc  = rtlHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,DATA_WIDTH,MAX_CHAINS,BUILDING_BLOCKS,DATA_TYPE,DEVICE_FAM)
-#     emu_proc = emulatedHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,MAX_CHAINS,BUILDING_BLOCKS)
+    # Instantiate HW and Emulator Processors
+    readConf()
+    hw_proc  = rtlHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,DATA_WIDTH,MAX_CHAINS,BUILDING_BLOCKS,DATA_TYPE,DEVICE_FAM)
+    emu_proc = emulatedHw(N,M,IB_DEPTH,FUVRF_SIZE,VVVRF_SIZE,TB_SIZE,MAX_CHAINS,BUILDING_BLOCKS)
 
-#     # Create common input values
-#     num_input_vectors=2
-#     eof1=num_input_vectors*[True]
-#     pushVals(emu_proc,hw_proc,num_input_vectors,eof1)
+    # Create common input values
+    num_input_vectors=2
+    eof1=num_input_vectors*[True]
+    pushVals(emu_proc,hw_proc,num_input_vectors,eof1)
 
-#     # Initialize the memories the same way
-#     emu_proc.initialize_fu=list(range(FUVRF_SIZE*M))
-#     hw_proc.initialize_fu=list(range(FUVRF_SIZE*M))
+    # Initialize the memories the same way
+    emu_proc.initialize_fu=list(range(FUVRF_SIZE*M))
+    hw_proc.initialize_fu=list(range(FUVRF_SIZE*M))
 
-#     # Configure firmware - Both HW and Emulator work with the same firmware
-#     fw = firm.distribution(hw_proc.compiler,16,4)
-#     emu_proc.config(fw)
-#     hw_proc.config(fw)
+    # Configure firmware - Both HW and Emulator work with the same firmware
+    fw = firm.distribution(hw_proc.compiler,16,4)
+    emu_proc.config(fw)
+    hw_proc.config(fw)
 
-#     # Run HW simulation and emulation
-#     steps=45
-#     hw_results = hw_proc.run(steps=steps,gui=False,log=False)
-#     emu_results = emu_proc.run(steps=steps)
+    # Run HW simulation and emulation
+    steps=45
+    hw_results = hw_proc.run(steps=steps,gui=False,log=False)
+    emu_results = emu_proc.run(steps=steps)
 
-#     # Filter Results
-#     emu_results_filtered, hw_results_filtered = filterResults(emu_results, hw_results, DATA_TYPE)
+    # Filter Results
+    emu_results_filtered, hw_results_filtered = filterResults(emu_results, hw_results, DATA_TYPE)
 
-#     # Verify that results are equal
-#     assert np.allclose(emu_results_filtered,hw_results_filtered)
-#     print("Passed test #5")
+    # Verify that results are equal
+    assert np.allclose(emu_results_filtered,hw_results_filtered)
+    print("Passed test #5")
 
-# distribution()
+distribution()
 
 
 # def minicache_test():
