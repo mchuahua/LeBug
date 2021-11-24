@@ -29,7 +29,7 @@
     //TODO: change this to input to change it.
     localparam delta_flag = 1;
 
-    localparam PRECISION = 1; // Only edit this to change precision: (1: full, 2: half, 4: quarter, etc.)
+    localparam PRECISION = 4; // Only edit this to change precision: (1: full, 2: half, 4: quarter, etc.)
     localparam BLOCK_WIDTH = DATA_WIDTH/PRECISION;
     localparam NS = N*(PRECISION);
 
@@ -54,19 +54,21 @@
       // If we overflow, we just submit things as they are (This may happen if we are mixing precisions)
       if (valid_in==1'b1 && tracing==1'b1 && commit==1'b1 && cond_valid==1'b1) begin
         if (total_length>NS) begin
-            for (int i = 0; i < NS; i++) begin
-              vector_out[i/PRECISION] <= gen_vector.out(i, packed_data[i]);
-              packed_data[i] <= gen_bw.vector_in_to_pack(vector_in[i/PRECISION], i);
-            end
+            for (int i = 0; i < N; i++) vector_out[i] <= gen_vector.out(i, packed_data);
+            for (int i = 0; i < NS; i++) packed_data[i] <= gen_bw.vector_in_to_pack(vector_in[i/PRECISION], i);
             valid_out<=1;
             packed_counter<= vector_length;
         end
         else if (total_length==NS || total_length == N && delta_flag) begin
             if (vector_length==1) begin
-              for(int i = 0; i < NS; i++) vector_out[i/PRECISION] <= gen_vector.out(i, pack_1[i]);
+              for(int i = 0; i < N; i++) begin
+                vector_out[i] <= gen_vector.out(i, pack_1);
+              end
             end
             else if (vector_length==M) begin
-              for(int i = 0; i < NS; i++) vector_out[i/PRECISION] <= gen_vector.out(i, pack_M[i]);
+              for(int i = 0; i < N; i++) begin
+                vector_out[i] <= gen_vector.out(i, pack_M);
+              end
             end
             else begin
               vector_out<=vector_in;
@@ -108,10 +110,10 @@
         $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
         $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
         $display("\tpack_delta: %b %b %b %b %b %b %b %b",pack_delta[0],pack_delta[1],pack_delta[2],pack_delta[3],pack_delta[4],pack_delta[5],pack_delta[6],pack_delta[7]);
-        $display("\tpack_1: %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7]);
-        $display("\tpack_M: %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7]);
-        // $display("\tpack_1: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7], pack_1[8],pack_1[9],pack_1[10],pack_1[11],pack_1[12],pack_1[13],pack_1[14],pack_1[15]);
-        // $display("\tpack_M: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7], pack_M[8],pack_M[9],pack_M[10],pack_M[11],pack_M[12],pack_M[13],pack_M[14],pack_M[15]);
+        // $display("\tpack_1: %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7]);
+        // $display("\tpack_M: %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7]);
+        $display("\tpack_1: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7], pack_1[8],pack_1[9],pack_1[10],pack_1[11],pack_1[12],pack_1[13],pack_1[14],pack_1[15]);
+        $display("\tpack_M: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7], pack_M[8],pack_M[9],pack_M[10],pack_M[11],pack_M[12],pack_M[13],pack_M[14],pack_M[15]);
         $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
         $display("Vector length %d, total length: %d, packed_counter %d", vector_length, total_length, packed_counter);
     end
@@ -187,7 +189,7 @@
         function automatic [BLOCK_WIDTH-1:0] vector_in_to_pack;
           input [DATA_WIDTH-1:0] curr;
           input int factor;
-          vector_in_to_pack[BLOCK_WIDTH-1:0] = curr[(DATA_WIDTH - ((PRECISION == 1) ? 0 : BLOCK_WIDTH * (factor/PRECISION)))-1 -: BLOCK_WIDTH];
+          vector_in_to_pack[BLOCK_WIDTH-1:0] = curr[(DATA_WIDTH - BLOCK_WIDTH*(factor%PRECISION)) -1 -: BLOCK_WIDTH];
         endfunction
       end
     endgenerate
@@ -197,16 +199,18 @@
       case(PRECISION)
         1: begin: gen_vector
           function automatic [DATA_WIDTH-1:0] out;
-            input [BLOCK_WIDTH-1:0] prev;
-            input [BLOCK_WIDTH-1:0] curr;
-            out = curr;
+            input int factor;
+            input [BLOCK_WIDTH-1:0] curr[NS-1:0];
+            out = curr[factor];
           endfunction
         end
         default: begin: gen_vector
           function automatic [DATA_WIDTH-1:0] out;
-            input [4:0] factor;
-            input [BLOCK_WIDTH-1:0] curr;
-            out[(DATA_WIDTH - BLOCK_WIDTH * (factor/PRECISION))-1 -: BLOCK_WIDTH] = curr;
+            input int factor;
+            input [BLOCK_WIDTH-1:0] curr [NS-1:0];
+            // out[DATA_WIDTH - BLOCK_WIDTH*(factor%PRECISION))-1 -: BLOCK_WIDTH] = curr;
+            for (int i = 0; i < PRECISION; i++)
+              out[DATA_WIDTH - BLOCK_WIDTH*(PRECISION-1-i) -1 -: BLOCK_WIDTH] = curr[factor*PRECISION+i];
           endfunction
       end
       endcase
