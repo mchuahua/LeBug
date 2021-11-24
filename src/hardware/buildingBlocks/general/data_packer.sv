@@ -162,17 +162,14 @@
             pack_1[i-PRECISION] = packed_data[i];
         end
         // Pack M
-        if (M==N) begin
-          for (int i = 0; i < NS; i++) pack_M[i] = gen_bw.vector_in_to_pack(vector_in[i/PRECISION], i);
-        end
-        else begin
-          for (int i = 0; i < NS; i++) begin
-            if (NS - M*PRECISION - i > 0)
-              pack_M[NS-M*PRECISION+i] = gen_bw.vector_in_to_pack(vector_in[i/PRECISION], i);
-            else 
-              pack_M[i-M*PRECISION] = packed_data[i];
-          end 
-        end
+        for (int i = 0; i < NS; i++) begin
+          if (M == N) 
+            pack_M[i] = gen_bw.vector_in_to_pack(vector_in[i/PRECISION], i);
+          else if (NS - M*PRECISION - i > 0)
+            pack_M[NS-M*PRECISION+i] = gen_bw.vector_in_to_pack(vector_in[i/PRECISION], i);
+          else 
+            pack_M[i-M*PRECISION] = packed_data[i];
+        end 
       end
       else begin
         // Do things in low (PRECISION) precision
@@ -190,7 +187,7 @@
         function automatic [BLOCK_WIDTH-1:0] vector_in_to_pack;
           input [DATA_WIDTH-1:0] curr;
           input int factor;
-          vector_in_to_pack[BLOCK_WIDTH-1:0] = curr[(DATA_WIDTH - BLOCK_WIDTH * (factor/PRECISION))-1 -: BLOCK_WIDTH];
+          vector_in_to_pack[BLOCK_WIDTH-1:0] = curr[(DATA_WIDTH - ((PRECISION == 1) ? 0 : BLOCK_WIDTH * (factor/PRECISION)))-1 -: BLOCK_WIDTH];
         endfunction
       end
     endgenerate
