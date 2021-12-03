@@ -35,10 +35,12 @@ module  vectorScalarReduceUnit #(
     wire [DATA_WIDTH-1:0] sum; 
     reg [DATA_WIDTH-1:0] zeros [N-1:0]='{N{0}};
     reg [7:0] byte_counter =0;
-
+    
+    // For storing the previous vector for delta computations
+    reg [DATA_WIDTH-1:0] vector_prev [N-1:0];
+    reg [DATA_WIDTH-1:0] vector_curr [N-1:0];
 
     //-------------Code Start-----------------
-
     adderTree #(.N(N), .DATA_WIDTH(DATA_WIDTH))
           adder_tree_inst(.vector(vector_in), .result(sum));
 
@@ -46,16 +48,17 @@ module  vectorScalarReduceUnit #(
         // Perform operations normally if we are tracing
         if (tracing==1'b1) begin
           // Assign outputs
-          valid_out<=valid_in;
+          vector_curr<=valid_in;
           // Return N bytes (pass through)
           if (firmware[chainId_in]==8'd0) begin
-              vector_out<=vector_in;
+              vector_curr<=vector_in;
           end
           // Return 1 element (sum of all) zero padded
           else if (firmware[chainId_in]==8'd1) begin
-            vector_out<=zeros;
-            vector_out[0]<= sum;
+            vector_curr<=zeros;
+            vector_curr[0]<= sum;
           end
+          vector_prev <= vector_curr;
         end
 
         // If we are not tracing, we are reconfiguring the instrumentation
@@ -77,5 +80,7 @@ module  vectorScalarReduceUnit #(
         chainId_out<=chainId_in;
     end
 
+    // If delta flag is 1, we use current, otherwise we compute delta
+    assign vector_out = delta_flag ? vector_curr : vector_prev-vector_curr;
  
 endmodule 
