@@ -69,7 +69,7 @@ class rtlHw():
                     signals_to_connect.append(struct(name='configId_reconfig',type='logic',bits=8,elements=1))
 
             # Check if number of signals is the same
-            assert len(signals_to_connect)==len(self.module_input), "Not the same number of connected signals"
+            assert len(signals_to_connect)==len(self.module_input), f'Not the same number of connected signals, signals to connect: {len(signals_to_connect)}, module input: {len(self.module_input)}'
 
             # Ports map if the first name before the "_" is the same
             portMap={}
@@ -456,7 +456,8 @@ class rtlHw():
             ['eof_out','logic',2],
             ['bof_out','logic',2],
             ['chainId_out','logic','$clog2(MAX_CHAINS)'],
-            ['vector_out','logic','DATA_WIDTH','N']])
+            ['vector_out','logic','DATA_WIDTH','N'],
+            ['delta_flag','logic',1]])
         top.mod.vectorScalarReduceUnit.addParameter([
             ['N'],
             ['DATA_WIDTH'],
@@ -473,7 +474,8 @@ class rtlHw():
             ['eof_in','logic',2],
             ['bof_in','logic',2],
             ['chainId_in','logic','$clog2(MAX_CHAINS)'],
-            ['vector_in','logic','DATA_WIDTH','N']])
+            ['vector_in','logic','DATA_WIDTH','N'],
+            ['delta_flag','logic',1]])
         top.mod.dataPacker.addOutput([
             ['valid_out','logic',1],
             ['vector_out','logic','DATA_WIDTH','N']])
@@ -686,7 +688,8 @@ class rtlHw():
                                     'valid_in': 'valid_out_dp', 
                                     'vector_in': 'vector_out_dp', 
                                     'tracing': 'tracing_reconfig',
-                                    'tb_mem_address':'tb_mem_address_reconfig'}
+                                    'tb_mem_address':'tb_mem_address_reconfig',
+                                    'delta_flag':'delta_flag_vsru'}
 
         # Assign outputs
         top.output_assignment={'vector_out': 'vector_out_tb','uart_txd':'uart_txd_comm'}

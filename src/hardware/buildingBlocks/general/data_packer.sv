@@ -22,14 +22,15 @@
   input logic [7:0] configId,
   input logic [7:0] configData,
   input logic [DATA_WIDTH-1:0] vector_in [N-1:0],
+  input logic delta_flag,
   output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
   output reg valid_out
  );
 
     //TODO: change this to input to change it.
-    localparam delta_flag = 1;
+    // localparam delta_flag = 1;
 
-    localparam PRECISION = 4; // Only edit this to change precision: (1: full, 2: half, 4: quarter, etc.)
+    localparam PRECISION = 1; // Only edit this to change precision: (1: full, 2: half, 4: quarter, etc.)
     localparam BLOCK_WIDTH = DATA_WIDTH/PRECISION;
     localparam NS = N*(PRECISION);
 
@@ -106,16 +107,16 @@
           end
         end
       end
-        $display("New Cycle:");
-        $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
-        $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
-        $display("\tpack_delta: %b %b %b %b %b %b %b %b",pack_delta[0],pack_delta[1],pack_delta[2],pack_delta[3],pack_delta[4],pack_delta[5],pack_delta[6],pack_delta[7]);
+        $display("New Cycle: %b", delta_flag);
+        // $display("\tvector_in: %b %b %b %b %b %b %b %b (valid = %d)",vector_in[0],vector_in[1],vector_in[2],vector_in[3],vector_in[4],vector_in[5],vector_in[6],vector_in[7],valid_in);
+        // $display("\tpacked_data: %b %b %b %b %b %b %b %b",packed_data[0],packed_data[1],packed_data[2],packed_data[3],packed_data[4],packed_data[5],packed_data[6],packed_data[7]);
+        // $display("\tpack_delta: %b %b %b %b %b %b %b %b",pack_delta[0],pack_delta[1],pack_delta[2],pack_delta[3],pack_delta[4],pack_delta[5],pack_delta[6],pack_delta[7]);
         // $display("\tpack_1: %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7]);
         // $display("\tpack_M: %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7]);
-        $display("\tpack_1: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7], pack_1[8],pack_1[9],pack_1[10],pack_1[11],pack_1[12],pack_1[13],pack_1[14],pack_1[15]);
-        $display("\tpack_M: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7], pack_M[8],pack_M[9],pack_M[10],pack_M[11],pack_M[12],pack_M[13],pack_M[14],pack_M[15]);
-        $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
-        $display("Vector length %d, total length: %d, packed_counter %d", vector_length, total_length, packed_counter);
+        // $display("\tpack_1: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_1[0],pack_1[1],pack_1[2],pack_1[3],pack_1[4],pack_1[5],pack_1[6],pack_1[7], pack_1[8],pack_1[9],pack_1[10],pack_1[11],pack_1[12],pack_1[13],pack_1[14],pack_1[15]);
+        // $display("\tpack_M: %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b %b",pack_M[0],pack_M[1],pack_M[2],pack_M[3],pack_M[4],pack_M[5],pack_M[6],pack_M[7], pack_M[8],pack_M[9],pack_M[10],pack_M[11],pack_M[12],pack_M[13],pack_M[14],pack_M[15]);
+        // $display("\tvector_out: %b %b %b %b %b %b %b %b (valid = %d)",vector_out[0],vector_out[1],vector_out[2],vector_out[3],vector_out[4],vector_out[5],vector_out[6],vector_out[7],valid_out);
+        // $display("Vector length %d, total length: %d, packed_counter %d", vector_length, total_length, packed_counter);
     end
 
     always @(*) begin

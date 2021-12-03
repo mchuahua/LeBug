@@ -15,7 +15,8 @@
   input logic valid_in,
   input logic [$clog2(TB_SIZE)-1:0] tb_mem_address,
   input logic [DATA_WIDTH-1:0] vector_in [N-1:0],
-  output reg [DATA_WIDTH-1:0] vector_out [N-1:0]
+  output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
+  output logic delta_flag
  );
 
     //----------Internal Variables------------
@@ -62,13 +63,13 @@
 
     always @(posedge clk) begin
 
-        // Logic for enqueuing values
+        // Logic for enqueuing values + delta_flag for full precision at beginning of trace buffer.
         if (tracing==1'b1 & valid_in==1'b1) begin
-            mem_address_a <= mem_address_a<TB_SIZE-1 ? mem_address_a+1'b1 : 0;
+          mem_address_a <= mem_address_a<TB_SIZE-1 ? mem_address_a+1'b1 : 0;
         end
     end
 
-
+    assign delta_flag = mem_address_a < TB_SIZE-1 ? 0 : 1;
     // Directly assign module inputs to port A of memory
     assign mem_in_a = { >> { vector_in }};
     assign mem_write_enable_a = valid_in;

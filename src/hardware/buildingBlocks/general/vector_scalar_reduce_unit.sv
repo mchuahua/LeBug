@@ -26,7 +26,8 @@ module  vectorScalarReduceUnit #(
   output reg [DATA_WIDTH-1:0] vector_out [N-1:0],
   output reg [1:0] eof_out,
   output reg [1:0] bof_out,
-  output reg [$clog2(MAX_CHAINS)-1:0] chainId_out
+  output reg [$clog2(MAX_CHAINS)-1:0] chainId_out,
+  input logic delta_flag //to match fw logic that connects to datapacker. input is used to prevent multiple drivers even if it isn't being driven
  );
 
     //----------Internal Variables------------
