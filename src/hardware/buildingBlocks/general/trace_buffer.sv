@@ -69,6 +69,7 @@
         end
     end
 
+    //TODO: compute one/two cycles before based on building block usage of deltaflag
     assign delta_flag = mem_address_a < TB_SIZE-1 ? 0 : 1;
     // Directly assign module inputs to port A of memory
     assign mem_in_a = { >> { vector_in }};
